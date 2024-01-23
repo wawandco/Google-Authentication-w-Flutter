@@ -17,10 +17,10 @@ class _HeaderState extends State<StatefulWidget> {
 
   @override
   void initState() {
-    if (kIsWeb) {
-      authService.signInWeb(() {
+    Supabase.instance.client.auth.onAuthStateChange.listen((state) {
+      if (state.event == AuthChangeEvent.signedIn) {
         setState(() {
-          currentUser = Supabase.instance.client.auth.currentUser;
+          currentUser = state.session?.user;
 
           if (showModal) {
             showModal = false;
@@ -28,8 +28,13 @@ class _HeaderState extends State<StatefulWidget> {
             Navigator.of(context).pop();
           }
         });
-      });
+      }
+    });
+
+    if (kIsWeb) {
+      authService.signInWeb();
     }
+
     super.initState();
   }
 

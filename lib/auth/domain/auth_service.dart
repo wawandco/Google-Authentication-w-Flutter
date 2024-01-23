@@ -3,8 +3,8 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 abstract class AuthService {
+  Future<void> signInWeb();
   Future<void> signIn();
-  void signInWeb(VoidCallback? callback);
   Future<void> signOut();
 }
 
@@ -21,22 +21,11 @@ class _GoogleOAuthService extends AuthService {
         );
 
   @override
-  Future<void> signIn() async => _client.signIn().then(_authenticate);
+  Future<void> signInWeb() async =>
+      _client.onCurrentUserChanged.listen(_authenticate);
 
   @override
-  void signInWeb(VoidCallback? callback) {
-    if (!kIsWeb) return;
-
-    _client.onCurrentUserChanged.listen((GoogleSignInAccount? account) {
-      _authenticate(account).then((_) {
-        if (callback == null) return;
-
-        callback();
-      });
-    });
-
-    _client.signInSilently();
-  }
+  Future<void> signIn() async => await _client.signIn().then(_authenticate);
 
   Future<void> _authenticate(GoogleSignInAccount? account) async {
     if (account == null) return;
